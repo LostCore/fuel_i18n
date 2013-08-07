@@ -4,7 +4,7 @@ This package provide i18n capabilities to php and twig templates.
 
 ## Usage
 
-1 - Set desidered language and langcodes in config\i18n.php
+1 - Copy config\i18n.php in APPPATH/config and set the desidered values
 
 2 - Use following tags in templates
 
@@ -16,10 +16,35 @@ This package provide i18n capabilities to php and twig templates.
 
     {{ _t(Text in original language) }}
 
-3 - Put
+4 - Put
 
-    $intl = Intl::forge();
-    $intl->setLanguage(<language>);
+    <?php
+        if(Config::get(i18n.active,true)) Intl::setLanguage(<language>);
+    ?>
 
 Where you want to set language.
+
+## Methods
+
+- Get current language:
+
+    Intl::getCurrentLanguage();
+
+- Get client language (from browser):
+
+    Intl::getClientLanguage();
+
+Example:
+
+    <?php
+        if(Config::get(i18n.active,true)) Intl::setLanguage(Intl::getClientLanguage());
+    ?>
+
+- Check if a language is supported
+
+    Intl::isSupportedLanguage(<language>);
+
+This check in locales directory if there a folder for the language.
+
+This is done automatically in Intl::setLanguage();
 
