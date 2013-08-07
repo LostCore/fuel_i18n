@@ -4,55 +4,52 @@ namespace Intl;
 
 class Intl{
 
-    public static $_instance = false; //used in __callStatic
-    protected static $_langcodes = array(); //the supported langcodes configured in i18n.php
-    protected static $_default_language; //used in forge()
-    protected static $_default_locale; //used in forge()
-    protected $_defaults; //used in __construct()
-
-    public function __construct(){
-        $this->_defaults['language'] = \Config::get("language");
-        $this->_defaults['language_fallback'] = \Config::get("language_fallback");
-        $this->_defaults['locale'] = \Config::get("locale");
-        static::$_default_language = \Config::get("language");
-        static::$_default_locale = \Config::get("locale");
-        \Config::load("i18n",true);
-        static::$_langcodes = \Config::get("i18n.langcodes");
-    }
-
-    public static function forge(){
-        if(static::$_instance === false){
-      		$instance = new static();
-            static::$_instance = $instance;
-      	}
-
-        return static::$_instance;
-    }
-
-    public function setLanguage($language=null){
+    /** Set the system (language and locale) and gettext locale.
+     *  @use _getClientLanguage() if no $language is provided
+     *
+     */
+    public static function setLanguage($language=null){
         if(!isset($language)){
-            $language = $this->_getClientLanguage();
+            $language = self::getClientLanguage();
         }
-        if($this->_isValidLangCode($language)){
-            \Config::set('language',$language);
-            $locale = $this->_setLocale($language);
-            $this->_inizializeGettext($locale);
-        }else{
-            throw new InvalidLangCodeException($language.' is an invalid langcode');
-        }
-    }
-
-    private function _setLocale($language){
-        if($this->_isValidLangCode($language)){
-            $locale = static::$_langcodes[$language];
-            \Config::set('locale',$locale);
-            return $locale;
-        }else{
-            throw new InvalidLangCodeException($language.' is an invalid langcode');
+        if(self::isSupportedLanguage($language)){
+            $locale = self::_getLanguageLocale($language);
+            self::_setSystemLanguage($language);
+            self::_setSystemLocale($locale);
+            self::_setGettextLocale($locale);
         }
     }
 
-    private function _inizializeGettext($locale){
+    public static function isSupportedLanguage($language){
+        if(!array_key_exists($language,self::_getSupportedLanguages())){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
+    private static function _getSupportedLanguages(){
+        $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'/*',GLOB_ONLYDIR);
+        $languages = array();
+        foreach($dirs as $d){
+            $langcode = explode("_",$d);
+            $languages[] = $langcode;
+        }
+        return $languages;
+    }
+
+    private static function _getLanguageLocale($language){
+        $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'/*',GLOB_ONLYDIR);
+        $langcodes = array();
+        foreach($dirs as $d){
+            $langcode = explode("_",$d);
+            $langcodes[$langcode[0]] = $langcode[1];
+        }
+        return $langcodes[$language] or false;
+    }
+
+    private static function _setGettextLocale($locale){
         setlocale(LC_ALL, $locale);
         setlocale(LC_TIME, $locale);
         putenv("LANG=$locale");
@@ -61,24 +58,14 @@ class Intl{
         textdomain("messages");
     }
 
-    /**
-     * Returns the "language" as set in config.php
-     * @static
-     * @return mixed
-     * @usage $Intl = Intl::forge()->getDefaultLanguage();
-     */
-    public function getDefaultLanguage(){
-        return static::$_default_language;
+    private static function _setSystemLanguage($language){
+        \Config::set('language',$language);
+        return true;
     }
 
-    /**
-     * Returns the "locale" as set in config.php
-     * @static
-     * @return mixed
-     * @usage $Intl = Intl::forge()->getDefaultLocale();
-     */
-    public function getDefaultLocale(){
-        return static::$_default_locale;
+    private static function _setSystemLocale($locale){
+        \Config::set('locale',$locale);
+        return true;
     }
 
     /**
@@ -105,21 +92,18 @@ class Intl{
      * @return mixed
      */
     public static function getClientLanguage(){
-        return static::_getClientLanguage();
-    }
-
-    public static function isSupported($language){
-        if(array_key_exists($language,static::$_langcodes)){
-            return true;
-        }else{
-            return false;
-        }
+        $langcode = (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+        $langcode = (!empty($langcode)) ? explode(";", $langcode) : $langcode;
+        $langcode = (!empty($langcode['0'])) ? explode(",", $langcode['0']) : $langcode;
+        $langcode = (!empty($langcode['0'])) ? explode("-", $langcode['0']) : $langcode;
+        return $langcode['0'];
     }
 
     public static function translateUri($language,$fullurl=true){
         $uri = \Uri::string();
         $baseurl = \Uri::base();
-        $pattern = "[".implode("|",array_keys(static::$_langcodes))."]";
+        $langcodes = self::_getSupportedLanguages();
+        $pattern = "[".implode("|",array_keys($langcodes))."]";
 
         if(preg_match($pattern,\Uri::segment(1),$matches) == 1){
             if($matches[0] == $language){
@@ -151,32 +135,16 @@ class Intl{
         return $translated_string;
     }
 
-    private static function _getClientLanguage(){
-        $langcode = (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
-        $langcode = (!empty($langcode)) ? explode(";", $langcode) : $langcode;
-        $langcode = (!empty($langcode['0'])) ? explode(",", $langcode['0']) : $langcode;
-        $langcode = (!empty($langcode['0'])) ? explode("-", $langcode['0']) : $langcode;
-        return $langcode['0'];
-    }
+    /*public static function __callStatic($method, $args = array()){
+        if(static::$_instance === false){
+            $instance = static::forge();
+            static::$_instance = $instance;
+        }
 
-    private static function _isValidLangCode($language){
-        if(!array_key_exists($language,static::$_langcodes)) throw new InvalidLangCodeException($language.' is an invalid langcode');
-        else return true;
-    }
+        if(is_callable(array(static::$_instance, $method))){
+            return call_user_func_array(array(static::$_instance, $method), $args);
+        }
 
-    public static function __callStatic($method, $args = array()){
-   		if(static::$_instance === false){
-   			$instance = static::forge();
-   			static::$_instance = $instance;
-   		}
-
-   		if(is_callable(array(static::$_instance, $method))){
-   			return call_user_func_array(array(static::$_instance, $method), $args);
-   		}
-
-   		throw new \BadMethodCallException('Invalid method: '.get_called_class().'::'.$method);
-   	}
+        throw new \BadMethodCallException('Invalid method: '.get_called_class().'::'.$method);
+    }*/
 }
-
-class IntlException extends \Fuel\Core\FuelException {}
-class InvalidLangCodeException extends \Fuel\Core\FuelException {}

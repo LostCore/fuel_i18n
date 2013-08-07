@@ -6,8 +6,8 @@
  */
 
 return array(
-    'langcodes'  => array(
-        "en" => "en_US"
-    ),
+    'active' => true,
+    'locales_directory' => APPPATH."locale/",
+    'rewrite_uri' => true
 );
  
