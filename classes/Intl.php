@@ -4,6 +4,31 @@ namespace Intl;
 
 class Intl{
 
+    /**
+     * Instance for singleton usage.
+     */
+    public static $_instance = false;
+
+    /**
+     * Language config defaults.
+     */
+    protected $_defaults;
+
+    public function __construct(){
+        $this->_defaults['language'] = \Config::get("language");
+        $this->_defaults['language_fallback'] = \Config::get("language_fallback");
+        $this->_defaults['locale'] = \Config::get("locale");
+    }
+
+    public static function forge(){
+        if(static::$_instance === false){
+            $instance = new static();
+            static::$_instance = $instance;
+        }
+
+        return static::$_instance;
+    }
+
     /** Set the system (language and locale) and gettext locale.
      *  @use _getClientLanguage() if no $language is provided
      *
@@ -99,6 +124,26 @@ class Intl{
         return $langcode['0'];
     }
 
+    /**
+     * Returns the "language" as set in config.php
+     * @static
+     * @return mixed
+     * @usage $Intl = Intl::forge()->getDefaultLanguage();
+     */
+    public function getDefaultLanguage(){
+        return $this->_defaults['language'];
+    }
+
+    /**
+     * Returns the "locale" as set in config.php
+     * @static
+     * @return mixed
+     * @usage $Intl = Intl::forge()->getDefaultLocale();
+     */
+    public function getDefaultLocale(){
+        return $this->_defaults['locales'];
+    }
+
     public static function translateUri($language,$fullurl=true){
         $uri = \Uri::string();
         $baseurl = \Uri::base();
@@ -135,7 +180,7 @@ class Intl{
         return $translated_string;
     }
 
-    /*public static function __callStatic($method, $args = array()){
+    public static function __callStatic($method, $args = array()){
         if(static::$_instance === false){
             $instance = static::forge();
             static::$_instance = $instance;
@@ -146,5 +191,5 @@ class Intl{
         }
 
         throw new \BadMethodCallException('Invalid method: '.get_called_class().'::'.$method);
-    }*/
+    }
 }
