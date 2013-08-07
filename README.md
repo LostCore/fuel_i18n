@@ -19,10 +19,12 @@ This package provide i18n capabilities to php and twig templates.
 4 - Put
 
     <?php
-        if(Config::get(i18n.active,true)) Intl::setLanguage(<language>);
+        if(Config::get(i18n.active,true)){
+            Intl::forge()->setLanguage(<language>);
+        }
     ?>
 
-Where you want to set language.
+Where you want to set language for the first time (usually in a method that run early during app bootstrap).
 
 ## Methods
 
@@ -37,7 +39,7 @@ Where you want to set language.
 Example:
 
     <?php
-        if(Config::get(i18n.active,true)) Intl::setLanguage(Intl::getClientLanguage());
+        if(Config::get(i18n.active,true)) Intl::forge()->setLanguage(Intl::getClientLanguage());
     ?>
 
 - Check if a language is supported

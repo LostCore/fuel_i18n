@@ -20,6 +20,10 @@ class Intl{
         $this->_defaults['locale'] = \Config::get("locale");
     }
 
+    /**
+     * The forge() method saves call the constructor and saves the defaults values in $_instance()
+     * todo: provare __init() e levare il costruttore
+     */
     public static function forge(){
         if(static::$_instance === false){
             $instance = new static();
@@ -33,7 +37,7 @@ class Intl{
      *  @use _getClientLanguage() if no $language is provided
      *
      */
-    public static function setLanguage($language=null){
+    public function setLanguage($language=null){
         if(!isset($language)){
             $language = self::getClientLanguage();
         }
