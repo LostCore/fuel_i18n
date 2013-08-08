@@ -28,13 +28,13 @@ Where you want to set language for the first time (usually in a method that run 
 
 ## Methods
 
-- Get current language:
+**Intl::getCurrentLanguage();**
 
-    Intl::getCurrentLanguage();
+Get current language:
 
-- Get client language (from browser):
+**Intl::getClientLanguage();**
 
-    Intl::getClientLanguage();
+Get client language (from browser):
 
 Example:
 
@@ -42,11 +42,8 @@ Example:
         if(Config::get(i18n.active,true)) Intl::forge()->setLanguage(Intl::getClientLanguage());
     ?>
 
-- Check if a language is supported
+**Intl::isSupportedLanguage(<language>);**
 
-    Intl::isSupportedLanguage(<language>);
-
-This check in locales directory if there a folder for the language.
-
-This is done automatically in Intl::setLanguage();
+Check if a language is supported; it looks in locales directory if there is a folder named after the language.
+This step is done automatically in setLanguage();
 
