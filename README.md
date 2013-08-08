@@ -47,3 +47,17 @@ Example:
 Check if a language is supported; it looks in locales directory if there is a folder named after the language.
 This step is done automatically in setLanguage();
 
+## Intl\Uri
+
+This class overwrites core's Uri create() method, make it able to adds /<language>/ before actual uri.
+
+You can use it like this:
+
+    if(<you want to prepend language to uri>){
+        $class = '\Intl\Uri';
+    }else{
+        $class = '\Uri';
+    }
+
+    $link = $class::create("uri/path");
+
