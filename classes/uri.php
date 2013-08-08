@@ -1,6 +1,6 @@
 <?php
 
-namespace Multilang;
+namespace Intl;
 
 class Uri extends \Fuel\Core\Uri
 {
