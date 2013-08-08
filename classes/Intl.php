@@ -37,11 +37,11 @@ class Intl{
      *  @use _getClientLanguage() if no $language is provided
      *
      */
-    public function setLanguage($language=null){
+    public function setLanguage($language=null,$force=false){
         if(!isset($language)){
             $language = self::getClientLanguage();
         }
-        if(self::isSupportedLanguage($language)){
+        if(self::isSupportedLanguage($language) && !$force){
             $locale = self::_getLanguageLocale($language);
             self::_setSystemLanguage($language);
             self::_setSystemLocale($locale);
@@ -61,9 +61,11 @@ class Intl{
     private static function _getSupportedLanguages(){
         $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'/*',GLOB_ONLYDIR);
         $languages = array();
-        foreach($dirs as $d){
-            $langcode = explode("_",$d);
-            $languages[] = $langcode;
+        if(!empty($dirs)){
+            foreach($dirs as $d){
+                $langcode = explode("_",$d);
+                $languages[] = $langcode;
+            }
         }
         return $languages;
     }
@@ -145,7 +147,7 @@ class Intl{
      * @usage $Intl = Intl::forge()->getDefaultLocale();
      */
     public function getDefaultLocale(){
-        return $this->_defaults['locales'];
+        return $this->_defaults['locale'];
     }
 
     public static function translateUri($language,$fullurl=true){

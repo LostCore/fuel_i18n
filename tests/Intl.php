@@ -17,33 +17,32 @@ class Test_Intl extends \Fuel\Core\TestCase
 {
     protected $intl;
 
- 	public function setUp(){
+    public function setUp(){
         $this->intl = new Intl();
     }
 
     public function testInitialize() {
-         $this->assertEquals(\Config::get("language"),$this->intl->getDefaultLanguage());
-         $this->assertEquals(\Config::get("locale"),$this->intl->getDefaultLocale());
+        $this->assertEquals(\Config::get("language"),$this->intl->getDefaultLanguage());
+        $this->assertEquals(\Config::get("locale"),$this->intl->getDefaultLocale());
     }
 
     public function testChangeLanguage(){
-        $init_language = \Config::get("language");
-        $init_locale = \Config::get("locale");
+        \Config::set("language","it");
+        \Config::set("locale","it-IT");
 
         $this->intl->setLanguage("en");
 
-        $this->assertEquals($init_language,$this->intl->getDefaultLanguage());
-        $this->assertEquals($init_locale,$this->intl->getDefaultLocale());
-        $this->assertEquals("en",\Config::get("language"));
-        $this->assertEquals(\Config::get("language"),$this->intl->getCurrentLanguage());
-        $this->assertEquals(\Config::get("locale"),$this->intl->getCurrentLocale());
+        if(Intl::isSupportedLanguage("en")){
+            $this->assertEquals("en",\Config::get("language"));
+        }else{
+            $this->assertNotEquals("en",\Config::get("language"));
+        }
+
+        $this->assertEquals(\Config::get("language"),Intl::getCurrentLanguage());
+        $this->assertEquals(\Config::get("locale"),Intl::getCurrentLocale());
     }
 
-    /**
-     * @expectedException InvalidLangCodeException
-     */
-    public function testInvalidLangcode(){
-        $this->intl->setLanguage("or");
+    public function testInvalidLanguage(){
+        $this->assertEquals(false,Intl::isSupportedLanguage("or"));
     }
 }
- 
