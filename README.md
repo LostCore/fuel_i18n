@@ -1,6 +1,14 @@
-# FuelPHP Internationalization Package
+#FuelPHP Internationalization Package
+
+* Version 1.0
+
+## Description
 
 This package provide i18n capabilities to php and twig templates.
+
+##Development Team
+
+* Riccardo D'Angelo - Project Manager, Developer ([http://www.riccardodangelo.com/](http://www.riccardodangelo.com/))
 
 ## Usage
 
@@ -16,7 +24,7 @@ This package provide i18n capabilities to php and twig templates.
 
     {{ _t(Text in original language) }}
 
-4 - Put
+3 - Put
 
     <?php
         if(Config::get(i18n.active,true)){
