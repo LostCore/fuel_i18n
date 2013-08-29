@@ -32,7 +32,8 @@ This package provide i18n capabilities to php and twig templates.
         }
     ?>
 
-Where you want to set language for the first time (usually in a method that run early during app bootstrap).
+Where you want to set language for the first time (usually in a method that run early during app bootstrap). The language can be a ISO 639-1 code (it,en,es) or a full locale (it_IT,en_US,en_EN).
+If not specified, the browser highest priority language is taken.
 
 ## Methods
 

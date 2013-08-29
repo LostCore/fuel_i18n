@@ -35,49 +35,70 @@ class Intl{
 
     /** Set the system (language and locale) and gettext locale.
      *  @use _getClientLanguage() if no $language is provided
-     *
      */
     public function setLanguage($language=null,$force=false){
         if(!isset($language)){
-            $language = self::getClientLanguage();
+            $language = self::getClientLanguage(true);
         }
-        if(self::isSupportedLanguage($language) && !$force){
-            $locale = self::_getLanguageLocale($language);
-            self::_setSystemLanguage($language);
+
+        if(preg_match("|([a-z]+)_([a-zA-Z]+)|",$language,$matches)){
+            $langcode = $matches[1];
+            $countrycode = $matches[2];
+        }else{
+            $langcode = $language;
+            $countrycode = strtoupper($language);
+        }
+
+        $fully_supported = self::isSupportedLanguage($langcode,$countrycode);
+        $half_supported = self::isSupportedLanguage($langcode);
+        $is_the_default = $langcode == $this->getDefaultLanguage() && $langcode."_".$countrycode == $this->getDefaultLocale() ? true : false;
+
+        if($fully_supported && !$force && !$is_the_default){
+            $locale = $langcode."_".$countrycode;
+            self::_setSystemLanguage($langcode);
+            self::_setSystemLocale($locale);
+            self::_setGettextLocale($locale);
+        }elseif($half_supported && !$force && !$is_the_default){ //if we have the langcode but not the countrycode then take the first locale available
+            $supported_locales = self::_getSupportedLanguages();
+
+            foreach($supported_locales as $l){
+                if(preg_match("|".$langcode."_([a-zA-Z]+)|",$l,$matches)){
+                    $countrycode = $matches[1]; //get the first countrycode and exit
+                    break;
+                }
+            }
+
+            $locale = $langcode."_".$countrycode;
+            self::_setSystemLanguage($langcode);
             self::_setSystemLocale($locale);
             self::_setGettextLocale($locale);
         }
     }
 
-    public static function isSupportedLanguage($language){
-        if(!array_key_exists($language,self::_getSupportedLanguages())){
-            return false;
-        }
-        else{
-            return true;
+    public static function isSupportedLanguage($langcode,$countrycode=null){
+        if(!isset($countrycode)){
+            return in_array($langcode,self::_getSupportedLanguages(true));
+        }else{
+            $language = $langcode."_".$countrycode;
+            return in_array($language,self::_getSupportedLanguages());
         }
     }
 
-    private static function _getSupportedLanguages(){
-        $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'/*',GLOB_ONLYDIR);
+    private static function _getSupportedLanguages($only_langcode = false){
+        $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'*',GLOB_ONLYDIR);
         $languages = array();
         if(!empty($dirs)){
             foreach($dirs as $d){
-                $langcode = explode("_",$d);
-                $languages[] = $langcode;
+                $dirname = basename($d);
+                if($only_langcode){
+                    $langcode = explode("_",$dirname);
+                    $languages[] = $langcode[0]; //get the langcode and not the country code
+                }else{
+                    $languages[] = $dirname; //get langcode and country code
+                }
             }
         }
         return $languages;
-    }
-
-    private static function _getLanguageLocale($language){
-        $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'/*',GLOB_ONLYDIR);
-        $langcodes = array();
-        foreach($dirs as $d){
-            $langcode = explode("_",$d);
-            $langcodes[$langcode[0]] = $langcode[1];
-        }
-        return $langcodes[$language] or false;
     }
 
     private static function _setGettextLocale($locale){
@@ -118,16 +139,22 @@ class Intl{
     }
 
     /**
-     * Detect client browser language
-     * @static
-     * @return mixed
+     * Detect client browser language using HTTP_ACCEPT_LANGUAGE.
+     * @param bool $get_locale whatever return only the langcode or the full locale.
+     * @return string the langcode or the locale from the user browser
      */
-    public static function getClientLanguage(){
+    public static function getClientLanguage($get_locale = false){
         $langcode = (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
         $langcode = (!empty($langcode)) ? explode(";", $langcode) : $langcode;
         $langcode = (!empty($langcode['0'])) ? explode(",", $langcode['0']) : $langcode;
-        $langcode = (!empty($langcode['0'])) ? explode("-", $langcode['0']) : $langcode;
-        return $langcode['0'];
+
+        if($get_locale){
+            $locale = preg_replace("|-|","_",$langcode[0]);
+            return $locale;
+        }else{
+            $langcode = (!empty($langcode['0'])) ? explode("-", $langcode['0']) : $langcode;
+            return $langcode['0'];
+        }
     }
 
     /**
