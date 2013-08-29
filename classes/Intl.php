@@ -49,16 +49,16 @@ class Intl{
             $countrycode = strtoupper($language);
         }
 
-        $fully_supported = self::isSupportedLanguage($langcode,$countrycode);
-        $half_supported = self::isSupportedLanguage($langcode);
-        $is_the_default = $langcode == $this->getDefaultLanguage() && $langcode."_".$countrycode == $this->getDefaultLocale() ? true : false;
+        $bFully_supported = self::isSupportedLanguage($langcode,$countrycode);
+        $bHalf_supported = self::isSupportedLanguage($langcode);
+        $bIs_the_default = $langcode == $this->getDefaultLanguage() && $langcode."_".$countrycode == $this->getDefaultLocale() ? true : false;
 
-        if($fully_supported && !$force && !$is_the_default){
+        if($bFully_supported && !$force && !$bIs_the_default){
             $locale = $langcode."_".$countrycode;
             self::_setSystemLanguage($langcode);
             self::_setSystemLocale($locale);
             self::_setGettextLocale($locale);
-        }elseif($half_supported && !$force && !$is_the_default){ //if we have the langcode but not the countrycode then take the first locale available
+        }elseif($bHalf_supported && !$force && !$bIs_the_default){ //if we have the langcode but not the countrycode then take the first locale available
             $supported_locales = self::_getSupportedLanguages();
 
             foreach($supported_locales as $l){
