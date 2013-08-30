@@ -178,7 +178,7 @@ class Intl{
     }
 
     public static function translateUri($language,$fullurl=true){
-        $uri = \Uri::string();
+        /*$uri = \Uri::string();
         $baseurl = \Uri::base();
         $langcodes = self::_getSupportedLanguages();
         $pattern = "[".implode("|",array_keys($langcodes))."]";
@@ -195,7 +195,8 @@ class Intl{
             }
         }else{
             if($fullurl) return $baseurl."{$language}/".$uri; else return "{$language}/".$uri;
-        }
+        }*/
+        return Uri::translateCurrent($language,$fullurl);
     }
 
     public static function _t($string,$domain_path=null){
