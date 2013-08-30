@@ -59,7 +59,7 @@ class Intl{
             self::_setSystemLocale($locale);
             self::_setGettextLocale($locale);
         }elseif($bHalf_supported && !$force && !$bIs_the_default){ //if we have the langcode but not the countrycode then take the first locale available
-            $supported_locales = self::_getSupportedLanguages();
+            $supported_locales = self::getSupportedLanguages();
 
             foreach($supported_locales as $l){
                 if(preg_match("|".$langcode."_([a-zA-Z]+)|",$l,$matches)){
@@ -77,14 +77,14 @@ class Intl{
 
     public static function isSupportedLanguage($langcode,$countrycode=null){
         if(!isset($countrycode)){
-            return in_array($langcode,self::_getSupportedLanguages(true));
+            return in_array($langcode,self::getSupportedLanguages(true));
         }else{
             $language = $langcode."_".$countrycode;
-            return in_array($language,self::_getSupportedLanguages());
+            return in_array($language,self::getSupportedLanguages());
         }
     }
 
-    private static function _getSupportedLanguages($only_langcode = false){
+    private static function getSupportedLanguages($only_langcode = false){
         $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'*',GLOB_ONLYDIR);
         $languages = array();
         if(!empty($dirs)){
