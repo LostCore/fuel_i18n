@@ -84,7 +84,7 @@ class Intl{
         }
     }
 
-    private static function getSupportedLanguages($only_langcode = false){
+    public static function getSupportedLanguages($only_langcode = false){
         $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'*',GLOB_ONLYDIR);
         $languages = array();
         if(!empty($dirs)){
