@@ -4,6 +4,13 @@ namespace Intl;
 
 class Uri extends \Fuel\Core\Uri
 {
+    /**
+     * @param null $uri
+     * @param array $variables
+     * @param array $get_variables
+     * @param null $secure
+     * @return string
+     */
     public static function create($uri = null, $variables = array(), $get_variables = array(), $secure = null){
         if(\Config::get("i18n.active",false) && \Config::get("118n.rewrite_uri",true)){
             $current_lang = \Intl::getCurrentLanguage();
@@ -21,6 +28,11 @@ class Uri extends \Fuel\Core\Uri
         return $url;
     }
 
+    /**
+     * @param $language
+     * @param bool $fullurl
+     * @return string
+     */
     public static function translateCurrent($language,$fullurl = false){
         $uri = \Uri::string();
         $baseurl = \Uri::base();

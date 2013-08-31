@@ -33,8 +33,9 @@ class Intl{
         return static::$_instance;
     }
 
-    /** Set the system (language and locale) and gettext locale.
-     *  @use _getClientLanguage() if no $language is provided
+    /**
+     * Set the system (language and locale) and gettext locale.
+     * @use getClientLanguage() if no $language is provided
      */
     public function setLanguage($language=null,$force=false){
         if(!isset($language)){
@@ -75,6 +76,15 @@ class Intl{
         }
     }
 
+    /**
+     * Check if a langcode or a locale (langcode_countrycode) is supported (aka: there is a directory named after it in locales directory)
+     * @param $langcode
+     * @param null $countrycode provide this for checking for locales
+     * @return bool
+     * @use getSupportedLanguages()
+     * @usage   Intl::isSupportedLanguage("en"); //check if there is at least one directory that contain "en" in locales directory
+     *          Intl::isSupportedLanguage("en","US"); //check if there is a directory named en_US in locales directory
+     */
     public static function isSupportedLanguage($langcode,$countrycode=null){
         if(!isset($countrycode)){
             return in_array($langcode,self::getSupportedLanguages(true));
@@ -84,6 +94,11 @@ class Intl{
         }
     }
 
+    /**
+     * Retrive supported langcodes or locales from locale directory (as specified in i18n.locales_directory).
+     * @param bool $only_langcode to retrive only the langcodes (en,it,es...) and not the locales (en_EN,it_IT,en_US..)
+     * @return array with all supported langcodes or locales. Es: array(en,it,it_IT,en_EN,en_US)
+     */
     public static function getSupportedLanguages($only_langcode = false){
         $dirs = glob(\Config::get("i18n.locales_directory",APPPATH."locale/").'*',GLOB_ONLYDIR);
         $languages = array();
@@ -177,6 +192,13 @@ class Intl{
         return $this->_defaults['locale'];
     }
 
+    /**
+     * Translate the current uri to specified language.
+     * @param $language to translate to. Must be supported.
+     * @param bool $fullurl
+     * @return string the url
+     * @deprecated use Intl\Uri::translateCurrent($language,$fullurl=true) instead.
+     */
     public static function translateUri($language,$fullurl=true){
         /*$uri = \Uri::string();
         $baseurl = \Uri::base();
