@@ -95,6 +95,15 @@ class Intl{
     }
 
     /**
+     * Deprecated version of isSupportedLanguage()
+     * @deprecated
+     * @param $langcode
+     */
+    public static function isSupported($langcode){
+        self::isSupportedLanguage($langcode);
+    }
+
+    /**
      * Retrive supported langcodes or locales from locale directory (as specified in i18n.locales_directory).
      * @param bool $only_langcode to retrive only the langcodes (en,it,es...) and not the locales (en_EN,it_IT,en_US..)
      * @return array with all supported langcodes or locales. Es: array(en,it,it_IT,en_EN,en_US)
@@ -159,16 +168,16 @@ class Intl{
      * @return string the langcode or the locale from the user browser
      */
     public static function getClientLanguage($get_locale = false){
-        $langcode = (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
-        $langcode = (!empty($langcode)) ? explode(";", $langcode) : $langcode;
-        $langcode = (!empty($langcode['0'])) ? explode(",", $langcode['0']) : $langcode;
+        $langcode = !empty($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+        $langcode = !empty($langcode) ? explode(";", $langcode) : $langcode;
+        $langcode = !empty($langcode[0]) ? explode(",", $langcode[0]) : $langcode;
 
         if($get_locale){
             $locale = preg_replace("|-|","_",$langcode[0]);
             return $locale;
         }else{
-            $langcode = (!empty($langcode['0'])) ? explode("-", $langcode['0']) : $langcode;
-            return $langcode['0'];
+            $langcode = (!empty($langcode[0])) ? explode("-", $langcode[0]) : $langcode;
+            return $langcode[0];
         }
     }
 
